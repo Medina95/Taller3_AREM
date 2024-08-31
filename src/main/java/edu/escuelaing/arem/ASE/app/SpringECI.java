@@ -3,16 +3,16 @@ package edu.escuelaing.arem.ASE.app;
 import edu.escuelaing.arem.ASE.app.Anotaciones.GetMapping;
 import edu.escuelaing.arem.ASE.app.Anotaciones.RESTcontroller;
 import edu.escuelaing.arem.ASE.app.Anotaciones.RequestMapping;
+import edu.escuelaing.arem.ASE.app.Anotaciones.RequestParam;
 
 import java.io.*;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SpringECI {
 
@@ -34,7 +34,8 @@ public class SpringECI {
             e.printStackTrace();
         }
     }
-    public class ClassFinder {
+
+    public static class ClassFinder {
 
         public static List<Class<?>> findClasses(String packageName) throws ClassNotFoundException {
             String packagePath = packageName.replace('.', '/');
@@ -52,11 +53,11 @@ public class SpringECI {
             return classes;
         }
     }
+
     private static void loadServices() {
         Map<String, Method> services = new HashMap<>();
 
         try {
-            // Cambia el nombre del paquete según sea necesario
             String packageName = "edu.escuelaing.arem.ASE.app.Controladores";
             List<Class<?>> classes = ClassFinder.findClasses(packageName);
 
@@ -73,7 +74,6 @@ public class SpringECI {
                 }
             }
 
-            // Asigna los servicios al servidor
             SpringECI.services.putAll(services);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
@@ -102,11 +102,11 @@ public class SpringECI {
                 String requestedResource = tokens[1];
                 String response;
 
-
                 // Manejo de parámetros de consulta
                 String[] pathAndParams = requestedResource.split("\\?");
                 String path = pathAndParams[0];
                 Map<String, String> params = new HashMap<>();
+
                 if (pathAndParams.length > 1) {
                     String[] queryParams = pathAndParams[1].split("&");
                     for (String param : queryParams) {
@@ -117,11 +117,35 @@ public class SpringECI {
                     }
                 }
 
-                if (requestedResource.startsWith("/api")) {
-                    String ruta = requestedResource.substring(4); // Eliminar el "/api" de la solicitud
+                if (path.startsWith("/api")) {
+                    String ruta = path.substring(4); // Eliminar "/api" del inicio
                     Method serviceMethod = services.get(ruta);
                     if (serviceMethod != null) {
-                        Object result = serviceMethod.invoke(null); // Invocar el método estático
+                        Object[] methodParams = new Object[serviceMethod.getParameterCount()];
+                        Annotation[][] parameterAnnotations = serviceMethod.getParameterAnnotations();
+
+                        for (int i = 0; i < methodParams.length; i++) {
+                            for (Annotation annotation : parameterAnnotations[i]) {
+                                if (annotation instanceof RequestParam) {
+                                    RequestParam requestParam = (RequestParam) annotation;
+                                    //aca deberia parsear los tipos de dato
+                                    String paramValue = params.getOrDefault(requestParam.value(), requestParam.defaultValue());
+                                    methodParams[i] = paramValue;
+                                }
+                            }
+                        }
+
+                        Object result;
+                        if (Modifier.isStatic(serviceMethod.getModifiers())) {
+                            // Invocar el método estático con los parámetros
+                            result = serviceMethod.invoke(null, methodParams);
+                        } else {
+                            // Invocar el método no estático (se necesita una instancia de la clase)
+                            Class<?> declaringClass = serviceMethod.getDeclaringClass();
+                            Object instance = declaringClass.getDeclaredConstructor().newInstance();
+                            result = serviceMethod.invoke(instance, methodParams);
+                        }
+
                         response = "HTTP/1.1 200 OK\r\n" +
                                 "Content-Type: text/plain\r\n" +
                                 "Content-Length: " + result.toString().length() + "\r\n" +
@@ -136,7 +160,6 @@ public class SpringECI {
                     out.write(response.getBytes());
                     out.flush();
                 } else {
-
                     serveStaticFile(requestedResource, out);
                 }
             } catch (Exception e) {
