@@ -1,8 +1,16 @@
-package edu.escuelaing.arem.ASE.app;
+package edu.escuelaing.arem.ASE.app.Controladores;
+
+import edu.escuelaing.arem.ASE.app.Anotaciones.RESTcontroller;
+import edu.escuelaing.arem.ASE.app.Anotaciones.GetMapping;
+import edu.escuelaing.arem.ASE.app.Anotaciones.RequestMapping;
 
 @RESTcontroller
 public class HelloService {
 
+    @RequestMapping("/")
+    public static String index() {
+        return "Greetings from Custom Framework!";
+    }
     @GetMapping("/hello")
     public static  String hello(){
         return "hello";
