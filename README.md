@@ -91,7 +91,7 @@ Cada prueba utiliza el método testEndpoint que simula una solicitud HTTP, ejecu
 **expectedContent** el contenido esperado en la respuesta, **expectedStatus**  el estado esperado en la respuesta
 
 - **testGreetingWithNameParam**: Prueba el servicio de saludo con un parámetro de nombre. Configura el servicio REST para la ruta "/greeting" con un parámetro de nombre, simula una solicitud y verifica si la respuesta es correcta.
-- **testIndexStatic**: Prueba el servicio de contenido estático para la ruta raíz "/".Simula una solicitud y verifica si la respuesta contiene el contenido esperado.
+- **testIndexStatic**: Prueba el servicio de contenido estático para la ruta raíz "/". Simula una solicitud y verifica si la respuesta contiene el contenido esperado.
 - **testHelloStatic**: Prueba el servicio de contenido estático para la ruta raíz "/hello". Simula una solicitud y verifica si la respuesta contiene el contenido esperado.
 - **testSumWithParams**:Prueba el servicio de suma con parámetros. Configura el servicio REST para la ruta "/sum" con parámetros de suma, simula una solicitud y verifica si la respuesta es el resultado correcto de la suma.
 - **testGreetingWithDefaultParam**: Prueba el servicio de saludo con el parámetro de nombre por defecto. Configura el servicio REST para la ruta "/greeting" sin parámetros, simula una solicitud y verifica si la respuesta es el saludo por defecto.
