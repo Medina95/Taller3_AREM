@@ -18,7 +18,7 @@ public class SpringECI {
 
     private static final int PORT = 8080;
     private static final String WEB_ROOT = "src/webroot";
-    private static final Map<String, Method> services = new HashMap<>();
+    public static final Map<String, Method> services = new HashMap<>();
 
     public static void main(String[] args) {
         loadServices();
@@ -34,6 +34,7 @@ public class SpringECI {
             e.printStackTrace();
         }
     }
+
 
     public static class ClassFinder {
 
@@ -54,7 +55,7 @@ public class SpringECI {
         }
     }
 
-    private static void loadServices() {
+    public static void loadServices() {
         Map<String, Method> services = new HashMap<>();
 
         try {
@@ -80,7 +81,7 @@ public class SpringECI {
         }
     }
 
-    private static class ClientHandler implements Runnable {
+    public static class ClientHandler implements Runnable {
         private Socket clientSocket;
 
         public ClientHandler(Socket clientSocket) {
@@ -167,7 +168,7 @@ public class SpringECI {
             }
         }
 
-        private void serveStaticFile(String resource, OutputStream out) throws IOException {
+        public void serveStaticFile(String resource, OutputStream out) throws IOException {
             Path filePath = Paths.get(WEB_ROOT, resource);
             if (Files.exists(filePath) && !Files.isDirectory(filePath)) {
                 String contentType = Files.probeContentType(filePath);

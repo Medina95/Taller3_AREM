@@ -27,11 +27,11 @@ public class HelloService {
     }
     @GetMapping("/cedula")
     public static String cedula(){
-        return "100858401";
+        return "10085840100";
     }
 
     @GetMapping("/pi")
-    public static  String tremendo(){
+    public static  String pi(){
         return String.valueOf(Math.PI);
     }
 
