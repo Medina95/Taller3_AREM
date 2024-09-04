@@ -14,12 +14,23 @@ import java.net.Socket;
 import java.nio.file.*;
 import java.util.*;
 
+
+/**
+ * Clase principal que implementa un servidor HTTP básico utilizando anotaciones personalizadas para manejar servicios REST.
+ */
 public class SpringECI {
 
     private static final int PORT = 8080;
     private static final String WEB_ROOT = "src/webroot";
     public static final Map<String, Method> services = new HashMap<>();
 
+    /**
+     * Método principal que inicia el servidor web.
+     * Crea un {@link ServerSocket} para escuchar en el puerto especificado y acepta conexiones entrantes.
+     * Cada conexión es manejada en un hilo separado utilizando {@link ClientHandler}.
+     *
+     * @param args Los argumentos de línea de comandos
+     */
     public static void main(String[] args) {
         loadServices();
 
@@ -35,7 +46,9 @@ public class SpringECI {
         }
     }
 
-
+    /**
+     * Clase auxiliar para encontrar clases en un paquete específico.
+     */
     public static class ClassFinder {
 
         public static List<Class<?>> findClasses(String packageName) throws ClassNotFoundException {
@@ -54,7 +67,9 @@ public class SpringECI {
             return classes;
         }
     }
-
+    /**
+     * Carga los servicios REST desde las clases anotadas con @RESTcontroller.
+     */
     public static void loadServices() {
         Map<String, Method> services = new HashMap<>();
 
@@ -81,6 +96,10 @@ public class SpringECI {
         }
     }
 
+    /**
+     * Clase interna que maneja la comunicación con un cliente en un hilo separado.
+     * Procesa las solicitudes HTTP y delega el manejo de solicitudes RESTful a los servicios adecuados.
+     */
     public static class ClientHandler implements Runnable {
         private Socket clientSocket;
 
@@ -88,6 +107,11 @@ public class SpringECI {
             this.clientSocket = clientSocket;
         }
 
+
+        /**
+         * Método principal que maneja las solicitudes del cliente.
+         * Lee la solicitud HTTP, determina el método y recurso solicitado, y llama al servicio adecuado.
+         */
         @Override
         public void run() {
             try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -167,7 +191,12 @@ public class SpringECI {
                 e.printStackTrace();
             }
         }
-
+        /**
+         * Sirve archivos estáticos al cliente.
+         * @param resource Ruta del archivo solicitado.
+         * @param out Flujo de salida para enviar la respuesta.
+         * @throws IOException Si ocurre un error al leer el archivo o escribir la respuesta.
+         */
         public void serveStaticFile(String resource, OutputStream out) throws IOException {
             Path filePath = Paths.get(WEB_ROOT, resource);
             if (Files.exists(filePath) && !Files.isDirectory(filePath)) {
@@ -185,6 +214,12 @@ public class SpringECI {
             }
         }
 
+
+        /**
+         * Envía una respuesta 404 Not Found al cliente.
+         * @param out Flujo de salida para enviar la respuesta.
+         * @throws IOException Si ocurre un error al escribir la respuesta.
+         */
         private void send404(OutputStream out) throws IOException {
             String response = "HTTP/1.1 404 Not Found\r\n" +
                     "Content-Type: text/plain\r\n" +
